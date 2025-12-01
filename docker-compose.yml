@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    image: ai-image-editor-api:latest
+    container_name: ai-image-editor-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/storage:/app/storage
+      - ./cache/huggingface:/app/.cache/huggingface
+    gpus: all
+    restart: unless-stopped
