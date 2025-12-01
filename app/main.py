@@ -27,7 +27,6 @@ async def startup_event() -> None:
     logger.info(
         "app_startup",
         extra={
-            "storage_dir": str(settings.storage_dir),
             "model_device": settings.model_device,
             "model_id": settings.model_id,
             "max_parallel_jobs": settings.max_parallel_jobs,

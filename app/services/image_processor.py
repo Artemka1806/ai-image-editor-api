@@ -1,6 +1,5 @@
 import asyncio
 import io
-from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
@@ -32,18 +31,6 @@ class ImageEditJob:
         self.image_bytes = image_bytes
         self.webhook_url = webhook_url
         self.settings = settings
-
-    @property
-    def job_dir(self) -> Path:
-        return self.settings.storage_dir / self.job_id
-
-    @property
-    def input_path(self) -> Path:
-        return self.job_dir / "input.png"
-
-    @property
-    def output_path(self) -> Path:
-        return self.job_dir / "output.png"
 
 
 async def _get_pipeline(settings: Settings) -> QwenImageEditPlusPipeline:
@@ -77,19 +64,15 @@ async def handle_image_edit(job: ImageEditJob) -> None:
         "job_started",
         extra={"job_id": job.job_id, "webhook": job.webhook_url, "prompt": job.prompt},
     )
-    job.job_dir.mkdir(parents=True, exist_ok=True)
-    await asyncio.to_thread(job.input_path.write_bytes, job.image_bytes)
 
     try:
         edited_image_bytes = await generate_image(job)
-        await asyncio.to_thread(job.output_path.write_bytes, edited_image_bytes)
         await send_webhook(job, edited_image_bytes)
         logger.info(
             "job_completed",
             extra={
                 "job_id": job.job_id,
                 "webhook": job.webhook_url,
-                "output_path": str(job.output_path),
             },
         )
     except Exception as exc:  # noqa: BLE001
